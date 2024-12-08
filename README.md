@@ -42,18 +42,24 @@ Here are all the flags.
 Clone this repo in some folder.
 ```
 mkdir moogl
-cd moogl
-git clone https://github.com/archiebit/OpenGL.git
+cd    moogl
+git clone https://github.com/archiebit/OpenGL.git .
 ```
+<br/>
+<br/>
+
 
 Execute `make` (`mingw32-make` if you use MinGW) program with target config.
 ```
 make config=win-x64-dev
 ```
+<br/>
+<br/>
+
 
 Output will be in the __out__ folder.
 >[!NOTE]
->Possible configs at the time are 'win-x64-dev' and 'win-x64-rel'
+>Possible configs at the moment are: 'win-x64-dev' and 'win-x64-rel'
 
 
 
