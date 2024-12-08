@@ -61,6 +61,9 @@ namespace moonmice
                 std::ifstream file;
                 std::size_t   size;
 
+                // This is dumb. VS Code can't handle spaces in
+                // launch.json 'args' array.
+                // So this is my way to provide gl.xml.
                 #ifdef DEVELOPMENT
                 std::string   path( "D:\\Programing projects\\OpenGL\\.vscode\\gl.xml" );
                 #else
