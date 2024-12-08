@@ -1,6 +1,7 @@
-#include <moon-mice\constant.hh>
-
 #include <iostream>
+#include <limits>
+
+#include <moon-mice\constant.hh>
 
 
 namespace moonmice
@@ -65,5 +66,73 @@ namespace moonmice
 
             constants.erase( std::remove_if( starts, ending, predicate ) );
         }
+    }
+
+
+    std::string constant::declare_constants_32( )
+    {
+        std::size_t                   size = 0;
+        std::string                   outs;
+        std::vector<constant const *> list;
+        std::array<char, 9>           hexs = { };
+
+
+        for( std::size_t i = 0; i < constants.size( ); ++i )
+        {
+            std::uintmax_t maximum = std::numeric_limits<std::uint_least32_t>::max( );
+            std::uintmax_t current = constants[ i ].value;
+
+            if( current > maximum )
+            {
+                continue;
+            }
+
+            list.push_back( & constants[ i ] );
+
+            size = std::max( size, constants[ i ].label.length( ) );
+        }
+
+
+        for( std::size_t i = 0; i < list.size( ); ++i )
+        {
+            if( i == 0 )
+            {
+                outs.append( "enum GLenum32\n{\n" );
+            }
+
+
+            auto numb = list[ i ]->value;
+            auto name = list[ i ]->label;
+
+            auto  tab = 4;
+            auto  len = size - name.length( );
+
+            outs.append( tab, ' ' ).append( name );
+            outs.append( len, ' ' ).append( " = 0x" );
+
+
+            for( std::size_t i = 7; i < 8; --i )
+            {
+                auto digit = numb bitand 0x0F; numb >>= 4;
+
+                if( digit < 10 ) hexs[ i ] = '0' + digit;
+                else             hexs[ i ] = 'A' + digit - 10;
+            }
+
+            outs.append( hexs.data( ) + 0, 4 ).append( 1, '\'' );
+            outs.append( hexs.data( ) + 4, 4 );
+
+
+            if( i == list.size( ) - 1 )
+            {
+                outs.append( "\n};\n" );
+            }
+            else
+            {
+                outs.append( ",\n" );
+            }
+        }
+
+        return outs;
     }
 }

@@ -257,14 +257,89 @@ namespace moonmice
                 {
                     if( 0 == std::strcmp( list.name( ), "require" ) )
                     {
-                        constant::append( list, root( ) );
+                        pugi::xml_attribute profile = list.attribute( "profile" );
+                        std::string_view    special;
+
+                        if( not profile.empty( ) )
+                        {
+                            special = profile.as_string( );
+
+                            bool core = std::strncmp( profile.as_string( ), "core",           4 ) == 0;
+                            bool comp = std::strncmp( profile.as_string( ), "compatibility", 13 ) == 0;
+
+                            switch( group )
+                            {
+                                case CORE:
+                                {
+                                    if( core ) constant::append( list, root( ) );
+
+                                    break;
+                                }
+
+                                case COMPATIBLE:
+                                {
+                                    if( comp ) constant::append( list, root( ) );
+
+                                    break;
+                                }
+
+                                case NOTHING:
+                                {
+                                    constant::append( list, root( ) );
+
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            constant::append( list, root( ) );
+                        }
 
                         continue;
                     }
 
+
                     if( 0 == std::strcmp( list.name( ), "remove"  ) )
                     {
-                        constant::remove( list );
+                        pugi::xml_attribute profile = list.attribute( "profile" );
+                        std::string_view    special;
+
+                        if( not profile.empty( ) )
+                        {
+                            special = profile.as_string( );
+
+                            bool core = std::strncmp( profile.as_string( ), "core",           4 ) == 0;
+                            bool comp = std::strncmp( profile.as_string( ), "compatibility", 13 ) == 0;
+
+                            switch( group )
+                            {
+                                case CORE:
+                                {
+                                    if( core ) constant::remove( list );
+
+                                    break;
+                                }
+
+                                case COMPATIBLE:
+                                {
+                                    if( comp ) constant::remove( list );
+
+                                    break;
+                                }
+
+                                case NOTHING:
+                                {
+                                    constant::remove( list );
+
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            constant::remove( list );
+                        }
 
                         continue;
                     }
