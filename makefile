@@ -27,11 +27,11 @@ include makefile-main
 
 #--- Configuration build list --------------------------------------------------
 ifeq '${config}' 'win-x64-dev'
-$(call create-exe,moongl.exe)
+$(call create-exe,moogl.exe)
 endif
 
 ifeq '${config}' 'win-x64-rel'
-$(call create-exe,moongl.exe)
+$(call create-exe,moogl.exe)
 endif
 
 
