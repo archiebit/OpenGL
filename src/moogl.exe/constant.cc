@@ -1,5 +1,4 @@
 #include <iostream>
-#include <limits>
 
 #include <moon-mice\constant.hh>
 
@@ -79,7 +78,7 @@ namespace moonmice
 
         for( std::size_t i = 0; i < constants.size( ); ++i )
         {
-            std::uintmax_t maximum = std::numeric_limits<std::uint_least32_t>::max( );
+            std::uintmax_t maximum = 0xFFFF'FFFF;
             std::uintmax_t current = constants[ i ].value;
 
             if( current > maximum )
