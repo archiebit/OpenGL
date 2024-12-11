@@ -20,6 +20,8 @@ namespace moonmice
         static void append( pugi::xml_node list, pugi::xml_node root );
         static void remove( pugi::xml_node list );
 
+        static std::string   declare( );
+        static std::string implement( );
 
     private:
         static void fix_type( std::string & type );

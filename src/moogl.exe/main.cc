@@ -2,7 +2,9 @@
 #include <pugixml\pugixml.hh>
 
 #include <moon-mice\constant.hh>
+#include <moon-mice\function.hh>
 #include <moon-mice\context.hh>
+
 
 
 int main( int argc, char * argv[] )
@@ -13,21 +15,24 @@ int main( int argc, char * argv[] )
     context::select_settings( argc, argv );
     context::append( );
 
-    auto list = constant::declare_constants_32( );
+    std::string list = function::declare( );
+
 
     std::size_t starts = 0;
     std::size_t ending = list.find( '\n' );
 
-    do
+    while( true )
     {
-        std::string_view view( list.data( ) + starts, ending - starts );
-
-        std::clog << view;
+        std::clog << std::string_view( list.data( ) + starts, ending - starts );
 
         starts = ending;
         ending = list.find( '\n', starts + 1 );
+
+        if( ending == std::string::npos )
+        {
+            std::clog << '\n'; break;
+        }
     }
-    while( ending != std::string::npos );
 
 
     return 0;

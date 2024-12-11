@@ -84,11 +84,6 @@ namespace moonmice
 
 
         found:
-            if( want_name == "glCullFace" )
-            {
-                0;
-            }
-
             std::string              funname;
             std::string              funtype;
             std::vector<std::string> argname;
@@ -177,6 +172,60 @@ namespace moonmice
                 functions.erase( target );
             }
         }
+    }
+
+
+    std::string   function::declare( )
+    {
+        std::size_t size_type = 0;
+        std::size_t size_name = 0;
+
+        for( auto const & element : functions )
+        {
+            size_type = std::max( size_type, element.function_type.length( ) );
+            size_name = std::max( size_name, element.function_name.length( ) );
+        }
+
+
+        std::size_t step_type = 0;
+        std::size_t step_name = 0;
+        std::string      outs;
+
+        for( auto const & element : functions )
+        {
+            step_type = size_type - element.function_type.length( );
+            step_name = size_name - element.function_name.length( );
+
+            outs.append( element.function_type ).append( step_type, ' ' );
+            outs.append( 1, ' ' );
+            outs.append( step_name, ' ' );
+            outs.append( element.function_name );
+
+
+            std::size_t count = element.argument_type.size( );
+            std::size_t index;
+
+            outs.append( 1, '(' );
+
+            for( index = 0; index < count; ++index )
+            {
+                outs.append( 1, ' ' ).append( element.argument_type[ index ] );
+                outs.append( 1, ' ' ).append( element.argument_name[ index ] );
+
+                if( index != count - 1 ) outs.append( 1, ',' );
+            }
+
+            outs.append( 1, ' ' ).append( 1, ')'  );
+            outs.append( 1, ';' ).append( 1, '\n' );
+        }
+
+
+        return outs;
+    }
+
+    std::string function::implement( )
+    {
+        return { };
     }
 }
 
