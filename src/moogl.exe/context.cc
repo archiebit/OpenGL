@@ -3,6 +3,7 @@
 
 #include <moon-mice\context.hh>
 #include <moon-mice\constant.hh>
+#include <moon-mice\type.hh>
 #include <moon-mice\function.hh>
 
 
@@ -377,6 +378,168 @@ namespace moonmice
                 maj += 1;
                 min -= min;
             }
+        }
+    }
+
+    void context::define( std::string & value )
+    {
+        std::size_t const   MAJ = 0;
+        std::size_t const   MIN = 1;
+        std::size_t const GROUP = 2;
+
+        for( std::size_t count = 0; count != 3; )
+        {
+            std::size_t indices[ 3 ]
+            {
+                value.find(   "<MAJ>" ),
+                value.find(   "<MIN>" ),
+                value.find( "<GROUP>" )
+            };
+
+
+            if( indices[ GROUP ] != std::string::npos )
+            {
+                switch( group )
+                {
+                    case NOTHING:
+                    {
+                        value.replace( indices[ GROUP ], 7, "NONE" );
+
+                        break;
+                    }
+
+                    case CORE:
+                    {
+                        value.replace( indices[ GROUP ], 7, "CORE" );
+
+                        break;
+                    }
+
+                    case COMPATIBLE:
+                    {
+                        value.replace( indices[ GROUP ], 7, "COMPATIBLE" );
+
+                        break;
+                    }
+                }
+            }
+
+            if( indices[ MIN ] != std::string::npos )
+            {
+                value.replace( indices[ MIN ], 5, std::to_string( minor ) );
+            }
+
+            if( indices[ MAJ ] != std::string::npos )
+            {
+                value.replace( indices[ MAJ ], 5, std::to_string( major ) );
+            }
+
+
+            for( count = 0; auto index : indices )
+            {
+                count += index == std::string::npos;
+            }
+        }
+    }
+
+
+    void context::create_general_header( )
+    {
+        std::ofstream  file;
+        std::string    path = out + "OpenGL.hh";
+        std::string content
+        {
+            "#ifndef MOON_MICE_OPENGL\n"
+            "#define MOON_MICE_OPENGL\n"
+            "\n"
+            "\n"
+            "namespace moonmice::OpenGL\n"
+            "{\n"
+            "    enum  profile\n"
+            "    {\n"
+            "        NONE       = 0,\n"
+            "        CORE       = 1,\n"
+            "        COMPATIBLE = 2\n"
+            "    };\n"
+            "\n"
+            "\n"
+            "    template <unsigned int major, unsigned int minor, profile group>\n"
+            "    class context;\n"
+            "}\n"
+            "\n"
+            "\n"
+            "#endif\n"
+        };
+
+
+        try
+        {
+            file.exceptions( ~std::ofstream::goodbit );
+            file.open( path, std::ofstream::trunc );
+
+            file.write( content.data( ), content.size( ) );
+            file.close( );
+        }
+        catch( std::exception & )
+        {
+            std::cerr << "ERROR: An error occured while writing to a file.\n";
+            std::exit( 1 );
+        }
+    }
+
+    void context::create_special_header( )
+    {
+        std::ofstream  file;
+        std::string    path = out + "OpenGL <MAJ>.<MIN>.hh";
+        std::string content
+        {
+            "#ifndef MOON_MICE_OPENGL_<MAJ>_<MIN>\n"
+            "#define MOON_MICE_OPENGL_<MAJ>_<MIN>\n"
+            "\n"
+            "#include \"OpenGL.hh\"\n"
+            "\n"
+            "\n"
+            "namespace moonmice::OpenGL\n"
+            "{\n"
+            "    template <>\n"
+            "    class context<<MAJ>, <MIN>, <GROUP>>\n"
+            "    {\n"
+            "    public:\n"
+            "       ~context( );\n"
+            "        context( void * data );\n"
+            "        context( context const &  ) = delete;\n"
+            "        context( context &        ) = delete;\n"
+            "        context( context const && ) = delete;\n"
+            "        context( context &&       );\n"
+            "\n"
+            "        context & operator=( context const &  ) = delete;\n"
+            "        context & operator=( context &        ) = delete;\n"
+            "        context & operator=( context const && ) = delete;\n"
+            "        context & operator=( context &&       );\n"
+            "    };\n"
+            "}\n"
+            "\n"
+            "\n"
+            "#endif\n"
+        };
+
+
+        define(    path );
+        define( content );
+
+
+        try
+        {
+            file.exceptions( ~std::ofstream::goodbit );
+            file.open( path, std::ofstream::trunc );
+
+            file.write( content.data( ), content.size( ) );
+            file.close( );
+        }
+        catch( std::exception & )
+        {
+            std::cerr << "ERROR: An error occured while writing to a file.\n";
+            std::exit( 1 );
         }
     }
 }

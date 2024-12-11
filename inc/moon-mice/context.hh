@@ -23,8 +23,14 @@ namespace moonmice
 
     public:
         static void select_settings( int argc, char * argv[] );
-
         static void append( );
+        static void define( std::string & value );
+
+
+        static void create_general_header( );
+        static void create_special_header( );
+        static void create_special_source( );
+
 
         static pugi::xml_node root( );
         static pugi::xml_node find( ordinal major, ordinal min );
