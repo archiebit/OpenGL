@@ -3,6 +3,7 @@
 
 #include <moon-mice\context.hh>
 #include <moon-mice\constant.hh>
+#include <moon-mice\function.hh>
 
 
 namespace moonmice
@@ -271,14 +272,22 @@ namespace moonmice
                             {
                                 case CORE:
                                 {
-                                    if( core ) constant::append( list, root( ) );
+                                    if( core )
+                                    {
+                                        constant::append( list, root( ) );
+                                        function::append( list, root( ) );
+                                    }
 
                                     break;
                                 }
 
                                 case COMPATIBLE:
                                 {
-                                    if( comp ) constant::append( list, root( ) );
+                                    if( comp )
+                                    {
+                                        constant::append( list, root( ) );
+                                        function::append( list, root( ) );
+                                    }
 
                                     break;
                                 }
@@ -286,6 +295,7 @@ namespace moonmice
                                 case NOTHING:
                                 {
                                     constant::append( list, root( ) );
+                                    function::append( list, root( ) );
 
                                     break;
                                 }
@@ -294,6 +304,7 @@ namespace moonmice
                         else
                         {
                             constant::append( list, root( ) );
+                            function::append( list, root( ) );
                         }
 
                         continue;
@@ -316,14 +327,22 @@ namespace moonmice
                             {
                                 case CORE:
                                 {
-                                    if( core ) constant::remove( list );
+                                    if( core )
+                                    {
+                                        constant::remove( list );
+                                        function::remove( list );
+                                    }
 
                                     break;
                                 }
 
                                 case COMPATIBLE:
                                 {
-                                    if( comp ) constant::remove( list );
+                                    if( comp )
+                                    {
+                                        constant::remove( list );
+                                        function::remove( list );
+                                    }
 
                                     break;
                                 }
@@ -331,6 +350,7 @@ namespace moonmice
                                 case NOTHING:
                                 {
                                     constant::remove( list );
+                                    function::remove( list );
 
                                     break;
                                 }
@@ -339,6 +359,7 @@ namespace moonmice
                         else
                         {
                             constant::remove( list );
+                            function::remove( list );
                         }
 
                         continue;
