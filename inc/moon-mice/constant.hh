@@ -18,6 +18,7 @@ namespace moonmice
         static void remove( pugi::xml_node list );
 
         static std::string declare_constants_32( );
+        static std::string declare_constants_64( );
     };
 
 

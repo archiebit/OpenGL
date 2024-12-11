@@ -135,4 +135,74 @@ namespace moonmice
 
         return outs;
     }
+
+    std::string constant::declare_constants_64( )
+    {
+        std::size_t                   size = 0;
+        std::string                   outs;
+        std::vector<constant const *> list;
+        std::array<char, 16>          hexs = { };
+
+
+        for( std::size_t i = 0; i < constants.size( ); ++i )
+        {
+            std::uintmax_t minimum = 0xFFFF'FFFF;
+            std::uintmax_t current = constants[ i ].value;
+
+            if( current <= minimum )
+            {
+                continue;
+            }
+
+            list.push_back( & constants[ i ] );
+
+            size = std::max( size, constants[ i ].label.length( ) );
+        }
+
+
+        for( std::size_t i = 0; i < list.size( ); ++i )
+        {
+            if( i == 0 )
+            {
+                outs.append( "enum GLenum64\n{\n" );
+            }
+
+
+            auto numb = list[ i ]->value;
+            auto name = list[ i ]->label;
+
+            auto  tab = 4;
+            auto  len = size - name.length( );
+
+            outs.append( tab, ' ' ).append( name );
+            outs.append( len, ' ' ).append( " = 0x" );
+
+
+            for( std::size_t i = 15; i < 16; --i )
+            {
+                auto digit = numb bitand 0x0F; numb >>= 4;
+
+                if( digit < 10 ) hexs[ i ] = '0' + digit;
+                else             hexs[ i ] = 'A' + digit - 10;
+            }
+
+            outs.append( hexs.data( ) +  0, 4 ).append( 1, '\'' );
+            outs.append( hexs.data( ) +  4, 4 ).append( 1, '\'' );
+            outs.append( hexs.data( ) +  8, 4 ).append( 1, '\'' );
+            outs.append( hexs.data( ) + 12, 4 );
+
+
+            if( i == list.size( ) - 1 )
+            {
+                outs.append( "\n};\n" );
+            }
+            else
+            {
+                outs.append( ",\n" );
+            }
+        }
+
+
+        return outs;
+    }
 }
