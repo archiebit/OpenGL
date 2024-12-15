@@ -386,13 +386,15 @@ namespace moonmice
     {
         std::unordered_map<std::string, std::size_t> match
         {
-            { "<MAJ>",    0 },
-            { "<MIN>",    0 },
-            { "<GROUP>",  0 },
-            { "<TYPE>",   0 },
-            { "<ENUM32>", 0 },
-            { "<ENUM64>", 0 },
-            { "<PROCS>",  0 }
+            { "<MAJ>",              0 },
+            { "<MIN>",              0 },
+            { "<GROUP>",            0 },
+            { "<TYPE>",             0 },
+            { "<ENUM32>",           0 },
+            { "<ENUM64>",           0 },
+            { "<PROCS>",            0 },
+            { "<IMP_CONTEXT_PROC>", 0 },
+            { "<IMP_CONTEXT_INTL>", 0 }
         };
 
 
@@ -577,6 +579,70 @@ namespace moonmice
 
                 continue;
             }
+
+
+            if( match[ "<IMP_CONTEXT_PROC>" ] != std::string::npos )
+            {
+                std::size_t offset = match[ "<IMP_CONTEXT_PROC>" ];
+                std::size_t length = 18;
+
+
+                std::string record = function::implement( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
+            }
+
+
+            if( match[ "<IMP_CONTEXT_INTL>" ] != std::string::npos )
+            {
+                std::size_t offset = match[ "<IMP_CONTEXT_INTL>" ];
+                std::size_t length = 18;
+
+
+                std::string record = context::implement_internal( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
+            }
         }
     }
 
@@ -628,7 +694,7 @@ namespace moonmice
     void context::create_special_header( )
     {
         std::ofstream  file;
-        std::string    path = out + "OpenGL <MAJ>.<MIN>.hh";
+        std::string    path = out + "OpenGL_<MAJ>.<MIN>.hh";
         std::string content
         {
             "#ifndef MOON_MICE_OPENGL_<MAJ>_<MIN>\n"
@@ -695,6 +761,131 @@ namespace moonmice
             std::cerr << "ERROR: An error occured while writing to a file.\n";
             std::exit( 1 );
         }
+    }
+
+    void context::create_special_source( )
+    {
+        std::ofstream  file;
+        std::string    path = out + "OpenGL_<MAJ>.<MIN>.cc";
+        std::string content
+        {
+            "#include \"OpenGL_<MAJ>.<MIN>.hh\""
+            "\n"
+            "#ifdef _WIN32\n"
+            "#    include <windows.h>\n"
+            "#endif\n"
+            "\n"
+            "\n"
+            "namespace moonmice::OpenGL\n"
+            "{\n"
+            "    <IMP_CONTEXT_INTL>"
+            "}\n"
+            "\n"
+            "namespace moonmice::OpenGL\n"
+            "{\n"
+            "    <IMP_CONTEXT_PROC>"
+            "}"
+        };
+
+
+        define(    path );
+        define( content );
+
+        try
+        {
+            file.exceptions( ~std::ofstream::goodbit );
+            file.open( path, std::ofstream::trunc );
+
+            file.write( content.data( ), content.size( ) );
+            file.close( );
+        }
+        catch( std::exception & )
+        {
+            std::cerr << "ERROR: An error occured while writing to a file.\n";
+            std::exit( 1 );
+        }
+    }
+
+
+    std::string context::implement_internal( )
+    {
+        std::string list
+        {
+            "struct context<<MAJ>, <MIN>, <GROUP>>::implementation\n"
+            "{\n"
+            "#ifdef _WIN32\n"
+            "    HMODULE   Lib;\n"
+            "    HGLRC Context;\n"
+            "    HDC    Device;\n"
+            "#else\n"
+            "#    error Target OS is unsupported!\n"
+            "#endif\n"
+            "\n"
+            "\n"
+        };
+
+        context::define( list );
+
+
+        std::size_t type_size = 0;
+        std::size_t name_size = 0;
+
+        for( auto const & element : functions )
+        {
+            type_size = std::max( type_size, element.function_type.length( ) );
+            name_size = std::max( name_size, element.function_name.length( ) );
+        }
+
+
+        for( auto const & element : functions )
+        {
+            std::string occasion;
+            std::size_t type_tabs = type_size - element.function_type.length( );
+            std::size_t name_tabs = name_size - element.function_name.length( );
+
+            occasion.append( 4, ' ' );
+            occasion.append( element.function_type );
+            occasion.append( type_tabs, ' ' );
+            occasion.append( " ( * " );
+            occasion.append( element.function_name );
+            occasion.append( name_tabs, ' ' );
+            occasion.append( " )" );
+
+            if( element.argument_type.size( ) != 0 )
+            {
+                for( std::size_t i = 0; i < element.argument_type.size( ); ++i )
+                {
+                    if( i == 0 )
+                    {
+                        occasion.append( "( " );
+                    }
+
+
+                    occasion.append( element.argument_type[ i ] );
+
+
+                    if( i != element.argument_type.size( ) - 1 )
+                    {
+                        occasion.append( ", " );
+                    }
+                    else
+                    {
+                        occasion.append( " );" );
+                    }
+                }
+            }
+            else
+            {
+                occasion.append( "( );" );
+            }
+
+            list.append( occasion ).append( 1, '\n' );
+        }
+
+        list.append( "};\n" );
+
+
+        return list;
     }
 }
 

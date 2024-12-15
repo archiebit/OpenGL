@@ -37,6 +37,10 @@ namespace moonmice
 
 
     private:
+        static std::string implement_internal( );
+        static std::string implement_loading( );
+
+
         static ordinal    major;
         static ordinal    minor;
         static profile    group;

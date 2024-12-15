@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <moon-mice\function.hh>
+#include <moon-mice\context.hh>
 
 
 namespace moonmice
@@ -225,7 +226,109 @@ namespace moonmice
 
     std::string function::implement( )
     {
-        return { };
+        std::string    list;
+        std::string version = "context<<MAJ>, <MIN>, <GROUP>>::";
+
+        context::define( version );
+
+
+        std::size_t type_size = 0;
+        std::size_t name_size = 0;
+
+        for( auto const & element : functions )
+        {
+            std::size_t count = 0;
+            std::size_t index = element.function_type.find( "GL" );
+
+            while( index != std::string::npos )
+            {
+                count += 1;
+                index += 2; index = element.function_type.find( "GL", index );
+            }
+
+            type_size = std::max( type_size, element.function_type.length( ) + count * version.length( ) );
+            name_size = std::max( name_size, element.function_name.length( ) );
+        }
+
+
+        for( auto const & element : functions )
+        {
+            std::string args;
+            std::string head;
+            std::string body
+            {
+                "<HEAD>\n"
+                "{\n"
+                "    return imp-><NAME>(<ARGS>);\n"
+                "}\n"
+                "\n"
+            };
+
+
+            head.append( element.function_type );
+
+            for( std::size_t i = head.find( "GL" ); i != std::string::npos; i = head.find( "GL", i ) )
+            {
+                head.insert( i, version );
+
+                i += 2 + version.length( );
+            }
+
+            std::size_t type_tabs = type_size - head.length( );
+            std::size_t name_tabs = name_size - element.function_name.length( );
+
+
+            head.append( type_tabs, ' ' ).append( 1, ' ' );
+            head.append( name_tabs, ' ' );
+
+            head.append( version );
+            head.append( element.function_name );
+
+            if( element.argument_name.size( ) != 0 )
+            {
+                for( std::size_t i = 0; i < element.argument_name.size( ); ++i )
+                {
+                    if( i == 0 )
+                    {
+                        head.append( "(" );
+                        args.append( " " );
+                    }
+
+
+                    head.append( 1, ' ' ).append( element.argument_type[ i ] );
+                    head.append( 1, ' ' ).append( element.argument_name[ i ] );
+
+                    args.append( element.argument_name[ i ] );
+
+
+                    if( i == element.argument_name.size( ) - 1 )
+                    {
+                        head.append( " )" );
+                        args.append(  " " );
+                    }
+                    else
+                    {
+                        head.append(  "," );
+                        args.append( ", " );
+                    }
+                }
+            }
+            else
+            {
+                head.append( "( )" );
+                args.append(   " " );
+            }
+
+
+            body.replace( body.find( "<HEAD>" ), 6, head );
+            body.replace( body.find( "<NAME>" ), 6, element.function_name );
+            body.replace( body.find( "<ARGS>" ), 6, args );
+
+            list.append( body );
+        }
+
+
+        return list;
     }
 }
 
