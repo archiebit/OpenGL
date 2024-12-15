@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 
 #include <moon-mice\context.hh>
 #include <moon-mice\constant.hh>
@@ -383,61 +384,198 @@ namespace moonmice
 
     void context::define( std::string & value )
     {
-        std::size_t const   MAJ = 0;
-        std::size_t const   MIN = 1;
-        std::size_t const GROUP = 2;
-
-        for( std::size_t count = 0; count != 3; )
+        std::unordered_map<std::string, std::size_t> match
         {
-            std::size_t indices[ 3 ]
-            {
-                value.find(   "<MAJ>" ),
-                value.find(   "<MIN>" ),
-                value.find( "<GROUP>" )
-            };
+            { "<MAJ>",    0 },
+            { "<MIN>",    0 },
+            { "<GROUP>",  0 },
+            { "<TYPE>",   0 },
+            { "<ENUM32>", 0 },
+            { "<ENUM64>", 0 },
+            { "<PROCS>",  0 }
+        };
 
 
-            if( indices[ GROUP ] != std::string::npos )
+        while( true )
+        {
+            std::size_t count = match.size( );
+            std::size_t ready = 0;
+
+            for( auto & [ name, data ] : match )
             {
+                ready += ( data = value.find( name ) ) == std::string::npos;
+            }
+
+            if( ready == count )
+            {
+                break;
+            }
+
+
+
+            if( match[ "<MAJ>" ] != std::string::npos )
+            {
+                std::size_t starts = match[ "<MAJ>" ];
+                std::size_t length = 5;
+
+                value.replace( starts, length, std::to_string( major ) );
+
+                continue;
+            }
+
+
+            if( match[ "<MIN>" ] != std::string::npos )
+            {
+                std::size_t starts = match[ "<MIN>" ];
+                std::size_t length = 5;
+
+                value.replace( starts, length, std::to_string( minor ) );
+
+                continue;
+            }
+
+
+            if( match[ "<GROUP>" ] != std::string::npos )
+            {
+                std::size_t starts = match[ "<GROUP>" ];
+                std::size_t length = 7;
+
                 switch( group )
                 {
-                    case NOTHING:
-                    {
-                        value.replace( indices[ GROUP ], 7, "NONE" );
-
-                        break;
-                    }
-
-                    case CORE:
-                    {
-                        value.replace( indices[ GROUP ], 7, "CORE" );
-
-                        break;
-                    }
-
-                    case COMPATIBLE:
-                    {
-                        value.replace( indices[ GROUP ], 7, "COMPATIBLE" );
-
-                        break;
-                    }
+                    case NOTHING:    value.replace( starts, length,       "NONE" ); break;
+                    case CORE:       value.replace( starts, length,       "CORE" ); break;
+                    case COMPATIBLE: value.replace( starts, length, "COMPATIBLE" ); break;
                 }
-            }
 
-            if( indices[ MIN ] != std::string::npos )
-            {
-                value.replace( indices[ MIN ], 5, std::to_string( minor ) );
-            }
-
-            if( indices[ MAJ ] != std::string::npos )
-            {
-                value.replace( indices[ MAJ ], 5, std::to_string( major ) );
+                continue;
             }
 
 
-            for( count = 0; auto index : indices )
+            if( match[ "<TYPE>" ] != std::string::npos )
             {
-                count += index == std::string::npos;
+                std::size_t offset = match[ "<TYPE>" ];
+                std::size_t length = 6;
+
+
+                std::string record = type::define( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
+            }
+
+
+            if( match[ "<ENUM32>" ] != std::string::npos )
+            {
+                std::size_t offset = match[ "<ENUM32>" ];
+                std::size_t length = 8;
+
+
+                std::string record = constant::declare_constants_32( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
+            }
+
+
+            if( match[ "<ENUM64>" ] != std::string::npos )
+            {
+                std::size_t offset = match[ "<ENUM64>" ];
+                std::size_t length = 8;
+
+
+                std::string record = constant::declare_constants_64( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
+            }
+
+
+            if( match[ "<PROCS>" ] != std::string::npos )
+            {
+                std::size_t offset = match[ "<PROCS>" ];
+                std::size_t length = 7;
+
+
+                std::string record = function::declare( );
+
+                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
+                std::size_t starts = 0;
+                std::size_t ending = record.find( '\n' );
+
+                value.replace( offset, length, "" );
+
+                while( ending != std::string::npos )
+                {
+                    if( starts != 0 )
+                    {
+                        value.insert( offset, tabs, ' ' ); offset += tabs;
+                    }
+
+                    value.insert( offset, record, starts, ending - starts + 1 );
+
+                    offset = offset + ending + 1 - starts;
+                    starts = ending + 1;
+                    ending = record.find( '\n', starts );
+                }
+
+                continue;
             }
         }
     }
@@ -516,6 +654,23 @@ namespace moonmice
             "        context & operator=( context &        ) = delete;\n"
             "        context & operator=( context const && ) = delete;\n"
             "        context & operator=( context &&       );\n"
+            "\n"
+            "\n"
+            "    public:\n"
+            "        <ENUM32>"
+            "\n"
+            "        <ENUM64>"
+            "\n"
+            "\n"
+            "    <TYPE>"
+            "\n"
+            "\n"
+            "        <PROCS>"
+            "\n"
+            "\n"
+            "    private:\n"
+            "        struct implementation;\n"
+            "        struct implementation * imp;\n"
             "    };\n"
             "}\n"
             "\n"
@@ -526,7 +681,6 @@ namespace moonmice
 
         define(    path );
         define( content );
-
 
         try
         {
