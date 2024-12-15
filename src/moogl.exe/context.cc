@@ -769,7 +769,7 @@ namespace moonmice
         std::string    path = out + "OpenGL_<MAJ>.<MIN>.cc";
         std::string content
         {
-            "#include \"OpenGL_<MAJ>.<MIN>.hh\""
+            "#include \"OpenGL_<MAJ>.<MIN>.hh\"\n"
             "\n"
             "#ifdef _WIN32\n"
             "#    include <windows.h>\n"
