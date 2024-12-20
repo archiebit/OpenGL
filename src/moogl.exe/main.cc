@@ -16,6 +16,7 @@ int main( int argc, char * argv[] )
     context::append( );
 
     context::create_general_header( );
+    context::create_loading_header( );
     context::create_special_header( );
     context::create_special_source( );
 

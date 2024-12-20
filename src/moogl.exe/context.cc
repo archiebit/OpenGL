@@ -763,6 +763,207 @@ namespace moonmice
         }
     }
 
+    void context::create_loading_header( )
+    {
+        std::ofstream  file;
+        std::string    path = out + "OpenGL_init.hh";
+        std::string content
+        {
+            "#ifndef MOON_MICE_OPENGL_INIT_HH\n"
+            "#define MOON_MICE_OPENGL_INIT_HH\n"
+            "\n"
+            "\n"
+            "#ifdef _WIN32\n"
+            "#   include <windows.h>\n"
+            "\n"
+            "\n"
+            "#   define WGL_CONTEXT_MAJOR_VERSION             0x0000'2091\n"
+            "#   define WGL_CONTEXT_MINOR_VERSION             0x0000'2092\n"
+            "#   define WGL_CONTEXT_FLAGS                     0x0000'2094\n"
+            "#   define WGL_CONTEXT_DEBUG_BIT                 0x0000'0001\n"
+            "#   define WGL_CONTEXT_PROFILE_MASK              0x0000'9126\n"
+            "#   define WGL_CONTEXT_CORE_PROFILE_BIT          0x0000'0001\n"
+            "#   define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x0000'0002\n"
+            "\n"
+            "\n"
+            "\n"
+            "\n"
+            "LPVOID  LocateContextCommand( LPCSTR Command )\n"
+            "{\n"
+            "    FARPROC Invalids[]\n"
+            "    {\n"
+            "        ( FARPROC )(  0 ),\n"
+            "        ( FARPROC )(  1 ),\n"
+            "        ( FARPROC )(  2 ),\n"
+            "        ( FARPROC )(  3 ),\n"
+            "        ( FARPROC )( -1 )\n"
+            "    };\n"
+            "\n"
+            "    HMODULE Lib = GetModuleHandleW( L\"OPENGL32.DLL\" );\n"
+            "    FARPROC Fun = GetProcAddress( Lib, Command );\n"
+            "\n"
+            "    for( FARPROC Case : Invalids ) if( Case == Fun )\n"
+            "    {\n"
+            "        return ( LPVOID )( wglGetProcAddress( Command ) );\n"
+            "    }\n"
+            "\n"
+            "    return ( LPVOID )Fun;\n"
+            "}\n"
+            "\n"
+            "BOOLEAN CreateContextDummy( HWND Window )\n"
+            "{\n"
+            "    PIXELFORMATDESCRIPTOR Pixel\n"
+            "    {\n"
+            "        sizeof( PIXELFORMATDESCRIPTOR ),\n"
+            "        1,\n"
+            "        PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL,\n"
+            "        PFD_TYPE_RGBA,\n"
+            "        32,\n"
+            "        0, 0, 0, 0, 0, 0, 0, 0,\n"
+            "        0, 0, 0, 0, 0,\n"
+            "        24,\n"
+            "        8,\n"
+            "        0,\n"
+            "        PFD_MAIN_PLANE,\n"
+            "        0, 0, 0, 0\n"
+            "    };\n"
+            "    HMODULE LibGL = NULL;\n"
+            "    HDC        DC = NULL;\n"
+            "    HGLRC Context = NULL;\n"
+            "    INT    Format = 0;\n"
+            "\n"
+            "\n"
+            "    if( LibGL = LoadLibraryW( L\"OPENGL32.DLL\" ); LibGL == NULL )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "    if( DC = GetDC( Window ); DC == NULL )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "    if( Format = ChoosePixelFormat( DC, & Pixel ); Format == 0 )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "    if( SetPixelFormat( DC, Format, & Pixel ) == FALSE )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "    if( Context = wglCreateContext( DC ); Context == NULL )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "\n"
+            "    SetPropW( Window, L\"moonmice/context\", Context );\n"
+            "    SetPropW( Window, L\"moonmice/command\", NULL    );\n"
+            "\n"
+            "    SetLastError( ERROR_SUCCESS );\n"
+            "\n"
+            "    return TRUE;\n"
+            "}\n"
+            "\n"
+            "BOOLEAN CreateContextFinal( HWND Window, INT Major, INT Minor, BOOLEAN Compatible, BOOLEAN Debug )\n"
+            "{\n"
+            "    if( CreateContextDummy( Window ) == FALSE )\n"
+            "    {\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "    using INIT = HGLRC( * )( HDC, HGLRC, INT const * );\n"
+            "\n"
+            "    HGLRC Context = ( HGLRC )GetPropW( Window, L\"moonmice/context\" );\n"
+            "    HDC    Device = GetDC( Window );\n"
+            "\n"
+            "    wglMakeCurrent( Device, Context );\n"
+            "\n"
+            "    INIT   Proc = ( INIT )( LocateContextCommand( \"wglCreateContextAttribsARB\" ) );\n"
+            "    INT Attribs[]\n"
+            "    {\n"
+            "        WGL_CONTEXT_MAJOR_VERSION, Major,\n"
+            "        WGL_CONTEXT_MINOR_VERSION, Minor,\n"
+            "        WGL_CONTEXT_PROFILE_MASK,  0,\n"
+            "        WGL_CONTEXT_FLAGS,         0,\n"
+            "        0\n"
+            "    };\n"
+            "\n"
+            "    if( Compatible ) Attribs[ 5 ] |= WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT;\n"
+            "    else             Attribs[ 5 ] |= WGL_CONTEXT_CORE_PROFILE_BIT;\n"
+            "\n"
+            "    if( Debug      ) Attribs[ 7 ] |= WGL_CONTEXT_DEBUG_BIT;\n"
+            "\n"
+            "\n"
+            "    if( Proc == NULL )\n"
+            "    {\n"
+            "        wglMakeCurrent( NULL, NULL );\n"
+            "        wglDeleteContext( Context );\n"
+            "        FreeLibrary( GetModuleHandleW( L\"OPENGL32.DLL\" ) );\n"
+            "\n"
+            "        RemovePropW( Window, L\"moonmice/context\" );\n"
+            "        RemovePropW( Window, L\"moonmice/command\" );\n"
+            "\n"
+            "        SetLastError( ERROR_PROC_NOT_FOUND );\n"
+            "\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "\n"
+            "    Context = ( * Proc )( Device, NULL, Attribs );\n"
+            "\n"
+            "    if( Context == NULL )\n"
+            "    {\n"
+            "        DWORD Code = GetLastError( );\n"
+            "\n"
+            "        wglMakeCurrent( NULL, NULL );\n"
+            "        wglDeleteContext( ( HGLRC )GetPropW( Window, L\"moonmice/context\" ) );\n"
+            "        FreeLibrary( GetModuleHandleW( L\"OPENGL32.DLL\" ) );\n"
+            "\n"
+            "        RemovePropW( Window, L\"moonmice/context\" );\n"
+            "        RemovePropW( Window, L\"moonmice/command\" );\n"
+            "\n"
+            "        SetLastError( Code );\n"
+            "\n"
+            "        return FALSE;\n"
+            "    }\n"
+            "\n"
+            "\n"
+            "    wglMakeCurrent( Device, Context );\n"
+            "    wglDeleteContext( ( HGLRC )GetPropW( Window, L\"moonmice/context\" ) );\n"
+            "\n"
+            "    SetPropW( Window, L\"moonmice/context\", Context );\n"
+            "\n"
+            "    SetLastError( ERROR_SUCCESS );\n"
+            "\n"
+            "    return TRUE;\n"
+            "}\n"
+            "#else\n"
+            "#   error Target OS is unsupported!\n"
+            "#endif\n"
+            "\n"
+            "\n"
+            "#endif\n"
+        };
+
+
+        try
+        {
+            file.exceptions( ~std::ofstream::goodbit );
+            file.open( path, std::ofstream::trunc );
+
+            file.write( content.data( ), content.size( ) );
+            file.close( );
+        }
+        catch( std::exception & )
+        {
+            std::cerr << "ERROR: An error occured while writing to a file.\n";
+            std::exit( 1 );
+        }
+    }
+
     void context::create_special_source( )
     {
         std::ofstream  file;
@@ -773,6 +974,13 @@ namespace moonmice
             "\n"
             "#ifdef _WIN32\n"
             "#    include <windows.h>\n"
+            "#endif\n"
+            "\n"
+            "\n"
+            "#ifdef _WIN32\n"
+            "#   define APIENTRY __stdcall\n"
+            "#else\n"
+            "#   define APIENTRY\n"
             "#endif\n"
             "\n"
             "\n"
@@ -813,15 +1021,6 @@ namespace moonmice
         {
             "struct context<<MAJ>, <MIN>, <GROUP>>::implementation\n"
             "{\n"
-            "#ifdef _WIN32\n"
-            "    HMODULE   Lib;\n"
-            "    HGLRC Context;\n"
-            "    HDC    Device;\n"
-            "#else\n"
-            "#    error Target OS is unsupported!\n"
-            "#endif\n"
-            "\n"
-            "\n"
         };
 
         context::define( list );
@@ -837,6 +1036,9 @@ namespace moonmice
         }
 
 
+        std::string points;
+        std::string loader;
+
         for( auto const & element : functions )
         {
             std::string occasion;
@@ -846,7 +1048,7 @@ namespace moonmice
             occasion.append( 4, ' ' );
             occasion.append( element.function_type );
             occasion.append( type_tabs, ' ' );
-            occasion.append( " ( * " );
+            occasion.append( " ( APIENTRY * " );
             occasion.append( element.function_name );
             occasion.append( name_tabs, ' ' );
             occasion.append( " )" );
@@ -879,8 +1081,34 @@ namespace moonmice
                 occasion.append( "( );" );
             }
 
-            list.append( occasion ).append( 1, '\n' );
+            points.append( occasion ).append( 1, '\n' );
         }
+
+
+        for( auto const & element : functions )
+        {
+            std::size_t name_tabs = name_size - element.function_name.length( );
+
+            loader.append( 8, ' ' );
+            loader.append( element.function_name );
+            loader.append( name_tabs, ' ' );
+            loader.append( " = reinterpret_cast<decltype( " );
+            loader.append( element.function_name );
+            loader.append( name_tabs, ' ' );
+            loader.append( " )>( ( * proc )( \"" );
+            loader.append( element.function_name );
+            loader.append( "\"" );
+            loader.append( name_tabs, ' ' );
+            loader.append( ") );\n" );
+        }
+
+
+        list.append( points );
+        list.append( "\n\n" );
+        list.append( "    void locate( void *( * proc )( char const name[] ) )\n");
+        list.append( "    {\n" );
+        list.append( loader );
+        list.append( "    }\n" );
 
         list.append( "};\n" );
 

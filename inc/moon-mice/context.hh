@@ -29,6 +29,7 @@ namespace moonmice
 
         static void create_general_header( );
         static void create_special_header( );
+        static void create_loading_header( );
         static void create_special_source( );
 
 
