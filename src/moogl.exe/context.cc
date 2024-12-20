@@ -459,7 +459,7 @@ namespace moonmice
                 std::size_t length = 6;
 
 
-                std::string record = type::define( );
+                std::string record = type::declare( );
 
                 std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
                 std::size_t starts = 0;

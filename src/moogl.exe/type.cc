@@ -3,7 +3,7 @@
 
 namespace moonmice
 {
-    std::string type::define( )
+    std::string type::declare( )
     {
         return
         {

@@ -8,7 +8,7 @@ namespace moonmice
 {
     struct type
     {
-        static std::string define( );
+        static std::string declare( );
     };
 }
 
