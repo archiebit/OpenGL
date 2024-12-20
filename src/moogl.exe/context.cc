@@ -198,6 +198,96 @@ namespace moonmice
 
 namespace moonmice
 {
+    template <>
+    std::string context::implement<context::INI_PROC_LIST>( )
+    {
+        std::size_t name_size = 0;
+        std::size_t type_size = 0;
+
+        for( auto const & item : functions )
+        {
+            name_size = std::max( name_size, item.function_name.size( ) );
+            type_size = std::max( type_size, item.function_type.size( ) );
+        }
+
+
+        std::string list;
+
+        for( auto const & item : functions )
+        {
+            {
+                auto const & type = item.function_type;
+                auto const & name = item.function_name;
+
+                std::size_t name_step = name_size - name.size( );
+                std::size_t type_step = type_size - type.size( );
+
+
+                list.append( type ).append( type_step, ' ' );
+                list.append( " ( GLAPI * " );
+                list.append( name ).append( name_step, ' ' );
+                list.append( " )(" );
+            }
+
+
+            auto const & type = item.argument_type;
+            auto const & name = item.argument_name;
+
+            for( std::size_t index = 0; index < type.size( ); ++index )
+            {
+                list.append( 1, ' ' ).append( type[ index ] );
+                list.append( 1, ' ' ).append( name[ index ] );
+
+                if( index != type.size( ) - 1 )
+                {
+                    list.append( 1, ',' );
+                }
+            }
+
+            list.append( " );\n" );
+        }
+
+
+        return list;
+    }
+
+    void context::replace( std::string & target, std::string const & source, std::string const & pattern )
+    {
+        std::size_t offset = target.find( pattern );
+
+        if( offset == std::string::npos )
+        {
+            return;
+        }
+
+
+        std::size_t spaces = offset - target.rfind( '\n', offset ) - 1;
+        std::size_t starts = 0;
+        std::size_t ending = source.find( '\n' );
+        std::size_t length = ending - starts + 1;
+
+        target.erase( offset, pattern.size( ) );
+
+        while( ending != std::string::npos )
+        {
+            if( starts != 0 )
+            {
+                target.insert( offset, spaces, ' ' ); offset += spaces;
+            }
+
+            target.insert( offset, source, starts, length );
+
+            offset = offset + length;
+            starts = ending + 1;
+            ending = source.find( '\n', starts );
+            length = ending - starts + 1;
+        }
+    }
+}
+
+
+namespace moonmice
+{
     pugi::xml_node context::root( )
     {
         return data.child( "registry" );
@@ -392,7 +482,8 @@ namespace moonmice
             { "<ENUM64>",           0 },
             { "<PROCS>",            0 },
             { "<IMP_CONTEXT_PROC>", 0 },
-            { "<IMP_CONTEXT_INTL>", 0 }
+            { "<IMP_CONTEXT_INTL>", 0 },
+            { "// INI_PROC_LIST",   0 }
         };
 
 
@@ -412,6 +503,10 @@ namespace moonmice
             }
 
 
+            if( match[ "// INI_PROC_LIST" ] != std::string::npos )
+            {
+                replace( value, implement<INI_PROC_LIST>( ), "// INI_PROC_LIST" );
+            }
 
             if( match[ "<MAJ>" ] != std::string::npos )
             {

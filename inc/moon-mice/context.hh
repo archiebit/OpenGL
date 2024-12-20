@@ -20,6 +20,11 @@ namespace moonmice
             COMPATIBLE = 2
         };
 
+        enum  replacement
+        {
+            INI_PROC_LIST
+        };
+
 
     public:
         static void select_settings( int argc, char * argv[] );
@@ -38,6 +43,12 @@ namespace moonmice
 
 
     private:
+        template <replacement>
+        static std::string implement( );
+
+        static void replace( std::string & target, std::string const & source, std::string const & pattern );
+
+
         static std::string implement_internal( );
         static std::string implement_loading( );
 
