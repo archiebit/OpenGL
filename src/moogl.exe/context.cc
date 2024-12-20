@@ -4,7 +4,6 @@
 
 #include <moon-mice\context.hh>
 #include <moon-mice\constant.hh>
-#include <moon-mice\type.hh>
 #include <moon-mice\function.hh>
 
 
@@ -389,7 +388,6 @@ namespace moonmice
             { "<MAJ>",              0 },
             { "<MIN>",              0 },
             { "<GROUP>",            0 },
-            { "<TYPE>",             0 },
             { "<ENUM32>",           0 },
             { "<ENUM64>",           0 },
             { "<PROCS>",            0 },
@@ -447,38 +445,6 @@ namespace moonmice
                     case NOTHING:    value.replace( starts, length,       "NONE" ); break;
                     case CORE:       value.replace( starts, length,       "CORE" ); break;
                     case COMPATIBLE: value.replace( starts, length, "COMPATIBLE" ); break;
-                }
-
-                continue;
-            }
-
-
-            if( match[ "<TYPE>" ] != std::string::npos )
-            {
-                std::size_t offset = match[ "<TYPE>" ];
-                std::size_t length = 6;
-
-
-                std::string record = type::declare( );
-
-                std::size_t   tabs = offset - value.rfind( '\n', offset ) - 1;
-                std::size_t starts = 0;
-                std::size_t ending = record.find( '\n' );
-
-                value.replace( offset, length, "" );
-
-                while( ending != std::string::npos )
-                {
-                    if( starts != 0 )
-                    {
-                        value.insert( offset, tabs, ' ' ); offset += tabs;
-                    }
-
-                    value.insert( offset, record, starts, ending - starts + 1 );
-
-                    offset = offset + ending + 1 - starts;
-                    starts = ending + 1;
-                    ending = record.find( '\n', starts );
                 }
 
                 continue;
@@ -667,6 +633,43 @@ namespace moonmice
             "    };\n"
             "\n"
             "\n"
+            "#ifdef _WIN32\n"
+            "    using GLbyte   = signed char;\n"
+            "    using GLshort  = signed short int;\n"
+            "    using GLint    = signed int;\n"
+            "    using GLint64  = signed long long int;\n"
+            "\n"
+            "    using GLubyte  = unsigned char;\n"
+            "    using GLushort = unsigned short int;\n"
+            "    using GLuint   = unsigned int;\n"
+            "    using GLuint64 = unsigned long long int;\n"
+            "\n"
+            "    using GLfloat  = float;\n"
+            "    using GLdouble = double;\n"
+            "\n"
+            "    using GLclampf = float;\n"
+            "    using GLclampd = double;\n"
+            "\n"
+            "\n"
+            "    using GLenum     = unsigned int;\n"
+            "    using GLboolean  = bool;\n"
+            "    using GLvoid     = void;\n"
+            "    using GLchar     = char;\n"
+            "    using GLbitfield = unsigned int;\n"
+            "    using GLsizei    = unsigned int;\n"
+            "    using GLintptr   = signed long long int;\n"
+            "    using GLsizeiptr = unsigned long long int;\n"
+            "\n"
+            "    enum GLsync  : unsigned long long int { };\n"
+            "    enum GLfixed : signed int             { };\n"
+            "    enum GLhalf  : signed short int       { };\n"
+            "\n"
+            "    using GLDEBUGPROC = GLvoid( * )( GLenum, GLenum, GLuint, GLenum, GLsizei, GLchar const *, GLvoid const * );\n"
+            "#else\n"
+            "#   error Target OS is unsupported!\n"
+            "#endif\n"
+            "\n"
+            "\n"
             "    template <unsigned int major, unsigned int minor, profile group>\n"
             "    class context;\n"
             "}\n"
@@ -726,9 +729,6 @@ namespace moonmice
             "        <ENUM32>"
             "\n"
             "        <ENUM64>"
-            "\n"
-            "\n"
-            "    <TYPE>"
             "\n"
             "\n"
             "        <PROCS>"
